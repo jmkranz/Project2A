@@ -40,6 +40,7 @@
 #include <vtkDoubleArray.h>
 #include <vtkCellArray.h>
 
+bool global_debug = false;
 
 class Triangle
 {
@@ -50,6 +51,23 @@ class Triangle
       double         fieldValue[3]; // always between 0 and 1
       double         normals[3][3];
 };
+
+#define glCheckError() checkError(__LINE__)
+
+void checkError(int line)
+{
+  GLenum error = glGetError();
+
+  while(error != GL_NO_ERROR)
+  {
+    if(error == GL_INVALID_OPERATION)   std::cerr<<"Invalid operation at line "<<line<<std::endl;
+    if(error == GL_INVALID_ENUM)        std::cerr<<"Invalid enum at line "<<line<<std::endl;
+    if(error == GL_INVALID_VALUE)       std::cerr<<"Invalid value at line "<<line<<std::endl;
+    if(error == GL_OUT_OF_MEMORY)       std::cerr<<"Error, out of memory at "<<line<<std::endl;
+
+    error = glGetError();
+  }
+}
 
 //
 // Function: GetTriangles
@@ -119,6 +137,7 @@ GetTriangles(void)
     return tris;
 }
 
+std::vector<Triangle> triangles;
 //
 // Function: GetColorMap
 //
@@ -205,6 +224,18 @@ class vtk441Mapper : public vtkOpenGLPolyDataMapper
        glDisable(GL_LIGHT6);
        glDisable(GL_LIGHT7);
    }
+
+   void SetupTexture()
+   {
+      unsigned char *colorMap = GetColorMap();
+
+      glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, 256, 0, GL_RGB, GL_UNSIGNED_BYTE, GetColorMap());
+      glEnable(GL_COLOR_MATERIAL);
+      glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+      glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+      initialized = true;
+   }
 };
 
 class vtk441MapperPart1 : public vtk441Mapper
@@ -214,13 +245,80 @@ class vtk441MapperPart1 : public vtk441Mapper
    
    virtual void RenderPiece(vtkRenderer *ren, vtkActor *act)
    {
+      unsigned char *colorMap = GetColorMap();
+
       RemoveVTKOpenGLStateSideEffects();
       SetupLight();
-      glBegin(GL_TRIANGLES);
-      glVertex3f(-10, -10, -10);
-      glVertex3f(10, -10, 10);
-      glVertex3f(10, 10, 10);
+
+      glBegin(GL_LINE_STRIP);
+      glColor3ub(255,255,255);
+      
+      glVertex3f(10,10,10);
+      glVertex3f(10,10,-10);
+      glVertex3f(-10,10,-10);
+      glVertex3f(-10,10,10);
+      glVertex3f(10,10,10);
+      glVertex3f(10,-10,10);
+      glVertex3f(-10,-10,10);
+      glVertex3f(-10,10,10);
+      glVertex3f(-10,-10,10);
+      glVertex3f(-10,-10,-10);
+      glVertex3f(-10,10,-10);
+      glVertex3f(-10,-10,-10);
+      glVertex3f(10,-10,-10);
+      glVertex3f(10,10,-10);
+      glVertex3f(10,-10,-10);
+      glVertex3f(10,-10,10);
+
       glEnd();
+
+      // std::vector<Triangle> triangles = GetTriangles();
+
+      for (int i = 0; i < triangles.size(); i++)
+      //for (int i = 0; i < 0 + 1; i++)
+      {
+        Triangle curTri = triangles[i];
+
+        glEnable(GL_COLOR_MATERIAL);
+        glBegin(GL_TRIANGLES);
+
+        int index = (255*curTri.fieldValue[0]); 
+        glColor3ubv(&colorMap[3*index]);
+        glNormal3d( curTri.normals[0][0],
+                    curTri.normals[0][1],
+                    curTri.normals[0][2]);
+
+        glVertex3f(curTri.X[0], curTri.Y[0], curTri.Z[0]);
+
+        if (global_debug == true)
+        {
+          std::cout << "Triangle " << i << "has fields " << curTri.fieldValue[0] << ", " << curTri.fieldValue[1] << ", " << curTri.fieldValue[2] << endl;  
+          // std::cout << "Color for X is " << GetColorMap(curTri.fieldValue[0]) << endl; 
+
+        }
+    
+        index = (255*curTri.fieldValue[1]); 
+        glColor3ubv(&colorMap[3*index]);
+        glNormal3d( curTri.normals[1][0],
+                    curTri.normals[1][1],
+                    curTri.normals[1][2]);
+
+        glVertex3f(curTri.X[1], curTri.Y[1], curTri.Z[1]);
+
+        index = (255*curTri.fieldValue[2]); 
+        glColor3ubv(&colorMap[3*index]);
+        glNormal3d( curTri.normals[2][0],
+                    curTri.normals[2][1],
+                    curTri.normals[2][2]);
+
+        glVertex3f(curTri.X[2], curTri.Y[2], curTri.Z[2]);
+
+        // glColor3ub(255,255,255);
+        // glDisable(GL_COLOR_MATERIAL);
+
+        glEnd();
+      }
+
    }
 };
 
@@ -240,13 +338,84 @@ class vtk441MapperPart2 : public vtk441Mapper
    }
    virtual void RenderPiece(vtkRenderer *ren, vtkActor *act)
    {
-       RemoveVTKOpenGLStateSideEffects();
-       SetupLight();
-       glBegin(GL_TRIANGLES);
-       glVertex3f(-10, -10, -10);
-       glVertex3f(10, -10, 10);
-       glVertex3f(10, 10, 10);
-       glEnd();
+      RemoveVTKOpenGLStateSideEffects();
+      SetupLight();
+
+      // if (initialized == false)
+      //   SetupTexture();
+
+      glBegin(GL_LINE_STRIP);
+      glColor3ub(255,255,255);
+      
+      glVertex3f(10,10,10);
+      glVertex3f(10,10,-10);
+      glVertex3f(-10,10,-10);
+      glVertex3f(-10,10,10);
+      glVertex3f(10,10,10);
+      glVertex3f(10,-10,10);
+      glVertex3f(-10,-10,10);
+      glVertex3f(-10,10,10);
+      glVertex3f(-10,-10,10);
+      glVertex3f(-10,-10,-10);
+      glVertex3f(-10,10,-10);
+      glVertex3f(-10,-10,-10);
+      glVertex3f(10,-10,-10);
+      glVertex3f(10,10,-10);
+      glVertex3f(10,-10,-10);
+      glVertex3f(10,-10,10);
+
+      glEnd();
+
+      if (initialized == false)
+        SetupTexture();
+
+      glCheckError();
+
+      for (int i = 0; i < triangles.size(); i++)
+      //for (int i = 0; i < 0 + 1; i++)
+      {
+        Triangle curTri = triangles[i];
+
+        glEnable(GL_TEXTURE_1D);
+        glBegin(GL_TRIANGLES);
+
+        float index = (curTri.fieldValue[0]); 
+        // std::cout << "Index is: " << index << endl;
+        glTexCoord1f(index);
+        glNormal3d( curTri.normals[0][0],
+                    curTri.normals[0][1],
+                    curTri.normals[0][2]);
+
+        glVertex3f(curTri.X[0], curTri.Y[0], curTri.Z[0]);
+
+        if (global_debug == true)
+        {
+          std::cout << "Triangle " << i << "has fields " << curTri.fieldValue[0] << ", " << curTri.fieldValue[1] << ", " << curTri.fieldValue[2] << endl;  
+          // std::cout << "Color for X is " << GetColorMap(curTri.fieldValue[0]) << endl; 
+
+        }
+    
+        index = (curTri.fieldValue[1]); 
+        glTexCoord1f(index);
+        glNormal3d( curTri.normals[1][0],
+                    curTri.normals[1][1],
+                    curTri.normals[1][2]);
+
+        glVertex3f(curTri.X[1], curTri.Y[1], curTri.Z[1]);
+
+        index = (curTri.fieldValue[2]); 
+        glTexCoord1f(index);
+        glNormal3d( curTri.normals[2][0],
+                    curTri.normals[2][1],
+                    curTri.normals[2][2]);
+
+        glVertex3f(curTri.X[2], curTri.Y[2], curTri.Z[2]);
+
+        glEnd();
+        glDisable(GL_TEXTURE_1D);
+      }
+
+      glCheckError();
    }
 };
 
@@ -257,6 +426,8 @@ int main()
 {
   // Dummy input so VTK pipeline mojo is happy.
   //
+  triangles = GetTriangles();
+
   vtkSmartPointer<vtkSphereSource> sphere =
     vtkSmartPointer<vtkSphereSource>::New();
   sphere->SetThetaResolution(100);
