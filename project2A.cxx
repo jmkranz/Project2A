@@ -229,7 +229,7 @@ class vtk441Mapper : public vtkOpenGLPolyDataMapper
    {
       unsigned char *colorMap = GetColorMap();
 
-      glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, 256, 0, GL_RGB, GL_UNSIGNED_BYTE, GetColorMap());
+      glTexImage1D(GL_TEXTURE_1D, 0, GL_RGB, 256, 0, GL_RGB, GL_UNSIGNED_BYTE, colorMap);
       glEnable(GL_COLOR_MATERIAL);
       glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
       glTexParameterf(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

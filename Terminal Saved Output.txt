@@ -1,0 +1,34 @@
+128-223-223-173-wireless:Final Project Jason-Mac$ make
+Scanning dependencies of target project2B
+[100%] Building CXX object CMakeFiles/project2B.dir/project2B.cxx.o
+/Users/Jason-Mac/GitHub/Final Project/project2B.cxx:1006:12: error: invalid
+      suffix 'rdRiver' on integer constant
+          3rdRiver = false;
+           ^
+/Users/Jason-Mac/GitHub/Final Project/project2B.cxx:1007:12: error: invalid
+      suffix 'ndRiver' on integer constant
+          2ndRiver = false;
+           ^
+/Users/Jason-Mac/GitHub/Final Project/project2B.cxx:1008:12: error: invalid
+      suffix 'stRiver' on integer constant
+          1stRiver = false;
+           ^
+3 errors generated.
+make[2]: *** [CMakeFiles/project2B.dir/project2B.cxx.o] Error 1
+make[1]: *** [CMakeFiles/project2B.dir/all] Error 2
+make: *** [all] Error 2
+128-223-223-173-wireless:Final Project Jason-Mac$ make
+Scanning dependencies of target project2B
+[100%] Building CXX object CMakeFiles/project2B.dir/project2B.cxx.o
+Linking CXX executable project2B.app/Contents/MacOS/project2B
+[100%] Built target project2B
+128-223-223-173-wireless:Final Project Jason-Mac$ ./project2B.app/Contents/MacOS/project2B make
+Not initialized
+Setting up Texture
+
+
+
+
+
+
+
